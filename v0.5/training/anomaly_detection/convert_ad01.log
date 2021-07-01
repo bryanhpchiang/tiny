@@ -1,0 +1,22 @@
+/usr/local/Cellar/python@3.9/3.9.4/Frameworks/Python.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'tf2onnx.convert' found in sys.modules after import of package 'tf2onnx', but prior to execution of 'tf2onnx.convert'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+2021-06-23 11:43:52,282 - WARNING - '--tag' not specified for saved_model. Using --tag serve
+2021-06-23 11:43:53,201 - INFO - Signatures found in model: [serving_default].
+2021-06-23 11:43:53,201 - WARNING - '--signature_def' not specified, using first signature: serving_default
+2021-06-23 11:43:53,201 - INFO - Output names: ['dense_9']
+WARNING:tensorflow:From /usr/local/lib/python3.9/site-packages/tf2onnx/tf_loader.py:603: extract_sub_graph (from tensorflow.python.framework.graph_util_impl) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.compat.v1.graph_util.extract_sub_graph`
+2021-06-23 11:43:53,470 - WARNING - From /usr/local/lib/python3.9/site-packages/tf2onnx/tf_loader.py:603: extract_sub_graph (from tensorflow.python.framework.graph_util_impl) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.compat.v1.graph_util.extract_sub_graph`
+2021-06-23 11:43:53,548 - INFO - Using tensorflow=2.5.0, onnx=1.9.0, tf2onnx=1.8.5/50049d
+2021-06-23 11:43:53,549 - INFO - Using opset <onnx, 9>
+2021-06-23 11:43:53,575 - INFO - Computed 0 values for constant folding
+2021-06-23 11:43:53,686 - INFO - Optimizing ONNX model
+2021-06-23 11:43:53,817 - INFO - After optimization: Identity -5 (5->0)
+2021-06-23 11:43:53,822 - INFO -
+2021-06-23 11:43:53,822 - INFO - Successfully converted TensorFlow model trained_models/tmp_model to ONNX
+2021-06-23 11:43:53,822 - INFO - Model inputs: ['input_1:0']
+2021-06-23 11:43:53,822 - INFO - Model outputs: ['dense_9']
+2021-06-23 11:43:53,822 - INFO - ONNX model is saved at trained_models/ad01.onnx

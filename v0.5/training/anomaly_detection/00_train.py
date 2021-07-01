@@ -4,6 +4,7 @@
  @author Toshiki Nakamura, Yuki Nikaido, and Yohei Kawaguchi (Hitachi Ltd.)
  Copyright (C) 2020 Hitachi, Ltd. All right reserved.
 """
+from IPython import embed
 
 ########################################################################
 # import default python-library
@@ -101,7 +102,7 @@ def list_to_vector_array(file_list,
     """
     # calculate the number of dimensions
     dims = n_mels * frames
-
+    embed()
     # iterate file_to_vector_array()
     for idx in tqdm(range(len(file_list)), desc=msg):
         vector_array = com.file_to_vector_array(file_list[idx],
@@ -111,8 +112,10 @@ def list_to_vector_array(file_list,
                                                 hop_length=hop_length,
                                                 power=power)
         if idx == 0:
-            dataset = numpy.zeros((vector_array.shape[0] * len(file_list), dims), float)
-        dataset[vector_array.shape[0] * idx: vector_array.shape[0] * (idx + 1), :] = vector_array
+            dataset = numpy.zeros(
+                (vector_array.shape[0] * len(file_list), dims), float)
+        dataset[vector_array.shape[0] * idx: vector_array.shape[0]
+                * (idx + 1), :] = vector_array
 
     return dataset
 
@@ -135,7 +138,8 @@ def file_list_generator(target_dir,
     com.logger.info("target_dir : {}".format(target_dir))
 
     # generate training list
-    training_list_path = os.path.abspath("{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
+    training_list_path = os.path.abspath(
+        "{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
     files = sorted(glob.glob(training_list_path))
     if len(files) == 0:
         com.logger.exception("no_wav_file!!")
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     mode = com.command_line_chk()
     if mode is None:
         sys.exit(-1)
-        
+
     # make output directory
     os.makedirs(param["model_directory"], exist_ok=True)
 
@@ -168,7 +172,8 @@ if __name__ == "__main__":
     # loop of the base directory
     for idx, target_dir in enumerate(dirs):
         print("\n===========================")
-        print("[{idx}/{total}] {dirname}".format(dirname=target_dir, idx=idx+1, total=len(dirs)))
+        print("[{idx}/{total}] {dirname}".format(dirname=target_dir,
+                                                 idx=idx+1, total=len(dirs)))
 
         # set path
         machine_type = os.path.split(target_dir)[1]
@@ -194,7 +199,8 @@ if __name__ == "__main__":
 
         # train model
         print("============== MODEL TRAINING ==============")
-        model = keras_model.get_model(param["feature"]["n_mels"] * param["feature"]["frames"])
+        model = keras_model.get_model(
+            param["feature"]["n_mels"] * param["feature"]["frames"])
         model.summary()
 
         model.compile(**param["fit"]["compile"])
@@ -205,8 +211,9 @@ if __name__ == "__main__":
                             shuffle=param["fit"]["shuffle"],
                             validation_split=param["fit"]["validation_split"],
                             verbose=param["fit"]["verbose"])
-        
-        visualizer.loss_plot(history.history["loss"], history.history["val_loss"])
+
+        visualizer.loss_plot(
+            history.history["loss"], history.history["val_loss"])
         visualizer.save_figure(history_img)
         model.save(model_file_path)
         com.logger.info("save_model -> {}".format(model_file_path))

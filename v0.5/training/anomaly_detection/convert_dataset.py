@@ -46,14 +46,17 @@ if __name__ == "__main__":
     # loop of the base directory
     for idx, target_dir in enumerate(dirs):
         print("\n===========================")
-        print("[{idx}/{total}] {dirname}".format(dirname=target_dir, idx=idx+1, total=len(dirs)))
+        print("[{idx}/{total}] {dirname}".format(dirname=target_dir,
+                                                 idx=idx+1, total=len(dirs)))
         machine_type = os.path.split(target_dir)[1]
 
         machine_id_list = com.get_machine_id_list_for_test(target_dir)
+        print(machine_id_list)
 
         for id_str in machine_id_list:
             # load test file
-            test_files, y_true = com.test_file_list_generator(target_dir, id_str, mode)
+            test_files, y_true = com.test_file_list_generator(
+                target_dir, id_str, mode)
 
             print("\n============== BEGIN CONVERSION FOR A MACHINE ID ==============")
             y_pred = [0. for k in test_files]
@@ -67,6 +70,7 @@ if __name__ == "__main__":
                                                     power=param["feature"]["power"],
                                                     save_bin=True)
                 except Exception as e:
-                    com.logger.error("file broken!!: {}, {}".format(file_path, e))
+                    com.logger.error(
+                        "file broken!!: {}, {}".format(file_path, e))
 
             print("\n============ END OF CONVERSION FOR A MACHINE ID ============")
