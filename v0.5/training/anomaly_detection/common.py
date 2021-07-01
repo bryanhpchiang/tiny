@@ -5,10 +5,15 @@
  Copyright (C) 2020 Hitachi, Ltd. All right reserved.
 """
 
+from IPython import embed
+
 ########################################################################
 # import python-library
 ########################################################################
 # default
+import logging
+import librosa.display
+import pylab
 import csv
 import glob
 import argparse
@@ -27,8 +32,6 @@ from tqdm import tqdm
 
 import matplotlib
 matplotlib.use('Agg')  # No pictures displayed
-import pylab
-import librosa.display
 
 ########################################################################
 
@@ -39,7 +42,6 @@ import librosa.display
 """
 Standard output is logged in "baseline.log".
 """
-import logging
 
 logging.basicConfig(level=logging.DEBUG, filename="baseline.log")
 logger = logging.getLogger(' ')
@@ -63,11 +65,16 @@ __versions__ = "1.0.0"
 # argparse
 ########################################################################
 def command_line_chk():
-    parser = argparse.ArgumentParser(description='Without option argument, it will not run properly.')
-    parser.add_argument('-v', '--version', action='store_true', help="show application version")
-    parser.add_argument('-e', '--eval', action='store_true', help="run mode Evaluation")
-    parser.add_argument('-d', '--dev', action='store_true', help="run mode Development")
+    parser = argparse.ArgumentParser(
+        description='Without option argument, it will not run properly.')
+    parser.add_argument('-v', '--version', action='store_true',
+                        help="show application version")
+    parser.add_argument('-e', '--eval', action='store_true',
+                        help="run mode Evaluation")
+    parser.add_argument('-d', '--dev', action='store_true',
+                        help="run mode Development")
     args = parser.parse_args()
+
     if args.version:
         print("===============================")
         print("DCASE 2020 task 2 baseline\nversion {}".format(__versions__))
@@ -168,17 +175,18 @@ def file_to_vector_array(file_name,
                                                          power=power)
 
         # 03 convert melspectrogram to log mel energy
-        log_mel_spectrogram = 20.0 / power * numpy.log10(mel_spectrogram + sys.float_info.epsilon)
-
+        log_mel_spectrogram = 20.0 / power * \
+            numpy.log10(mel_spectrogram + sys.float_info.epsilon)
 
     else:
         logger.error("spectrogram method not supported: {}".format(method))
         return numpy.empty((0, dims))
 
     # 3b take central part only
-    log_mel_spectrogram = log_mel_spectrogram[:,50:250];
+    log_mel_spectrogram = log_mel_spectrogram[:, 50:250]
 
     # 04 calculate total vector size
+    embed()
     vector_array_size = len(log_mel_spectrogram[0, :]) - frames + 1
 
     # 05 skip too short clips
@@ -187,8 +195,22 @@ def file_to_vector_array(file_name,
 
     # 06 generate feature vectors by concatenating multiframes
     vector_array = numpy.zeros((vector_array_size, dims))
+    # frames = 5
+
+    # Spectrogram is size (128, 200), meaning 200 feature vectors along time of size 128 each.
+    # Each training example is 5 consecutive feature vectors (128 * 5 = 640).
+
+    # Vector array is of size (196, 640), there are 196 examples of length 640 each.
+    # The loop goes over each of the feature vector positions (1...5) and inserts the corresponding feature
+    # vector in a certain position for each example before moving onto the following feature vector.
+
+    # Specifically, at each iteration, we are assigning a slice of vector array of size (196, 128) to an extracted
+    # portion of the log_mel_spectrogram of size (128, 196). Note the dimensions mismatch - this is why we have the
+    # tranpose at the end.
+
     for t in range(frames):
-        vector_array[:, n_mels * t: n_mels * (t + 1)] = log_mel_spectrogram[:, t: t + vector_array_size].T
+        vector_array[:, n_mels * t: n_mels *
+                     (t + 1)] = log_mel_spectrogram[:, t: t + vector_array_size].T
 
     # 07 (optional) save histogram in png
     if save_png:
@@ -207,12 +229,14 @@ def file_to_vector_array(file_name,
     if save_bin:
         save_path = file_name.replace('.wav', '_hist_' + method + '.bin')
         # transpose to obtain correct order
-        numpy.swapaxes(log_mel_spectrogram, 0, 1).astype('float32').tofile(save_path)
+        numpy.swapaxes(log_mel_spectrogram, 0, 1).astype(
+            'float32').tofile(save_path)
 
     # 08 (optional) save parts (sliding window)
     if save_parts:
         for i in range(vector_array_size):
-            save_path = file_name.replace('.wav', '_hist_' + method + '_part{0:03d}'.format(i) + '.bin')
+            save_path = file_name.replace(
+                '.wav', '_hist_' + method + '_part{0:03d}'.format(i) + '.bin')
             # transpose to obtain correct order?
             vector_array[i].astype('float32').tofile(save_path)
 
@@ -235,12 +259,15 @@ def select_dirs(param, mode):
     """
     if mode:
         logger.info("load_directory <- development")
-        dir_path = os.path.abspath("{base}/*".format(base=param["dev_directory"]))
+        dir_path = os.path.abspath(
+            "{base}/*".format(base=param["dev_directory"]))
         dirs = sorted(glob.glob(dir_path))
     else:
         logger.info("load_directory <- evaluation")
-        dir_path = os.path.abspath("{base}/*".format(base=param["eval_directory"]))
+        dir_path = os.path.abspath(
+            "{base}/*".format(base=param["eval_directory"]))
         dirs = sorted(glob.glob(dir_path))
+    print(dir_path)
     return dirs
 
 ########################################################################
@@ -262,7 +289,8 @@ def get_machine_id_list_for_test(target_dir,
             list of machine IDs extracted from the names of test files
     """
     # create test files
-    dir_path = os.path.abspath("{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
+    dir_path = os.path.abspath(
+        "{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
     file_paths = sorted(glob.glob(dir_path))
     # extract id
     machine_id_list = sorted(list(set(itertools.chain.from_iterable(
@@ -343,6 +371,7 @@ def test_file_list_generator(target_dir,
     return files, labels
 ########################################################################
 
+
 def list_to_vector_array(file_list,
                          msg="calc...",
                          n_mels=64,
@@ -370,14 +399,16 @@ def list_to_vector_array(file_list,
     # iterate file_to_vector_array()
     for idx in tqdm(range(len(file_list)), desc=msg):
         vector_array = file_to_vector_array(file_list[idx],
-                                                n_mels=n_mels,
-                                                frames=frames,
-                                                n_fft=n_fft,
-                                                hop_length=hop_length,
-                                                power=power)
+                                            n_mels=n_mels,
+                                            frames=frames,
+                                            n_fft=n_fft,
+                                            hop_length=hop_length,
+                                            power=power)
         if idx == 0:
-            dataset = numpy.zeros((vector_array.shape[0] * len(file_list), dims), float)
-        dataset[vector_array.shape[0] * idx: vector_array.shape[0] * (idx + 1), :] = vector_array
+            dataset = numpy.zeros(
+                (vector_array.shape[0] * len(file_list), dims), float)
+        dataset[vector_array.shape[0] * idx: vector_array.shape[0]
+                * (idx + 1), :] = vector_array
 
     return dataset
 
@@ -400,7 +431,8 @@ def file_list_generator(target_dir,
     logger.info("target_dir : {}".format(target_dir))
 
     # generate training list
-    training_list_path = os.path.abspath("{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
+    training_list_path = os.path.abspath(
+        "{dir}/{dir_name}/*.{ext}".format(dir=target_dir, dir_name=dir_name, ext=ext))
     files = sorted(glob.glob(training_list_path))
     if len(files) == 0:
         logger.exception("no_wav_file!!")

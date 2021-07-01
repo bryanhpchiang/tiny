@@ -202,8 +202,9 @@ if __name__ == "__main__":
         model = keras_model.get_model(
             param["feature"]["n_mels"] * param["feature"]["frames"])
         model.summary()
-
         model.compile(**param["fit"]["compile"])
+
+        # Auto-encoder
         history = model.fit(train_data,
                             train_data,
                             epochs=param["fit"]["epochs"],

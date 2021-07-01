@@ -11,6 +11,7 @@
 import os
 import glob
 import sys
+from IPython import embed
 ########################################################################
 
 
@@ -68,6 +69,7 @@ if __name__ == "__main__":
         model_file = "{model}/model_{machine_type}.hdf5".format(model=param["model_directory"],
                                                                 machine_type=machine_type)
 
+        model_file = "trained_models/ad01.h5"
         # load model file
         if not os.path.exists(model_file):
             com.logger.error("{} model not found ".format(machine_type))
@@ -105,6 +107,8 @@ if __name__ == "__main__":
                                                     n_fft=param["feature"]["n_fft"],
                                                     hop_length=param["feature"]["hop_length"],
                                                     power=param["feature"]["power"])
+                    print("Predicting")
+                    embed()
                     pred = model.predict(data)
                     errors = numpy.mean(numpy.square(data - pred), axis=1)
                     y_pred[file_idx] = numpy.mean(errors)
