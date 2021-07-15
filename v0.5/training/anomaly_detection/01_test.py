@@ -12,6 +12,7 @@ import os
 import glob
 import sys
 from IPython import embed
+import dump
 ########################################################################
 
 
@@ -99,7 +100,11 @@ if __name__ == "__main__":
 
             print("\n============== BEGIN TEST FOR A MACHINE ID ==============")
             y_pred = [0. for k in test_files]
+            arr_strs = []
+            pred_strs = []
             for file_idx, file_path in tqdm(enumerate(test_files), total=len(test_files)):
+                if file_idx > 10:
+                    break
                 try:
                     data = com.file_to_vector_array(file_path,
                                                     n_mels=param["feature"]["n_mels"],
@@ -108,8 +113,17 @@ if __name__ == "__main__":
                                                     hop_length=param["feature"]["hop_length"],
                                                     power=param["feature"]["power"])
                     print("Predicting")
-                    embed()
+                    # embed()
+                    for x in data:
+                        arr_str = dump._to_array_str(x)
+                        arr_strs.append(arr_str)
+
                     pred = model.predict(data)
+                    for x in pred:
+                        pred_str = dump._to_array_str(x)
+                        pred_strs.append(pred_str)
+                        # embed()
+                    # numpy.square performs element-wise squaring
                     errors = numpy.mean(numpy.square(data - pred), axis=1)
                     y_pred[file_idx] = numpy.mean(errors)
                     anomaly_score_list.append(
@@ -117,6 +131,19 @@ if __name__ == "__main__":
                 except Exception as e:
                     com.logger.error(
                         "file broken!!: {}, {}".format(file_path, e))
+            # Dump array strings in file
+            embed()
+            with open("arr_strs.txt", "w") as f:
+                arr_concat_str = ",\n".join(arr_strs)
+                f.write(
+                    f"float array[{len(arr_strs)}][640] = {{ {arr_concat_str} }};\n")
+
+            with open("pred_strs.txt", "w") as f:
+                pred_concat_str = ",\n".join(pred_strs)
+                f.write(
+                    f"float array[{len(pred_strs)}][640] = {{ {pred_concat_str} }};\n")
+            print("Wrote array strings and prediction strings to files.")
+            break
 
             # save anomaly score
             com.save_csv(save_file_path=anomaly_score_csv,

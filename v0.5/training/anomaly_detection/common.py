@@ -186,7 +186,7 @@ def file_to_vector_array(file_name,
     log_mel_spectrogram = log_mel_spectrogram[:, 50:250]
 
     # 04 calculate total vector size
-    embed()
+    # embed()
     vector_array_size = len(log_mel_spectrogram[0, :]) - frames + 1
 
     # 05 skip too short clips
